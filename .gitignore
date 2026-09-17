@@ -1,0 +1,50 @@
+# ==========================================
+# Gradle & Build Artifacts
+# ==========================================
+.gradle/
+build/
+out/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ==========================================
+# IDE & Editors
+# ==========================================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Visual Studio Code / Cursor
+.vscode/
+*.code-workspace
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# ==========================================
+# Operating System & Temporary Files
+# ==========================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# ==========================================
+# Logs & Scratch files
+# ==========================================
+*.log
+scratch/

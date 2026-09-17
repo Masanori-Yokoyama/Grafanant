@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Cloud - マルチテナント統合管理プラットフォーム</title>
+    <meta name="description" content="Spring Boot 3 + PostgreSQL 行レベルマルチテナント認証・アイテム管理ポータル">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- Background Ambient Glow Orbs -->
+    <div class="ambient-background">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- Main App Container -->
+    <div id="app" class="app-root">
+
+        <!-- ============================================ -->
+        <!-- VIEW 1: ログインビュー (Login View) -->
+        <!-- ============================================ -->
+        <main id="loginView" class="view-panel login-view">
+            <div class="login-wrapper">
+                
+                <!-- Brand Header -->
+                <div class="login-header">
+                    <div class="brand-badge">
+                        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        <span>AETHER MULTI-TENANT</span>
+                    </div>
+                    <h1 class="login-title">テナントポータル ログイン</h1>
+                    <p class="login-subtitle">契約テナントIDとアカウント情報をご入力ください</p>
+                </div>
+
+                <!-- Login Card -->
+                <div class="glass-card login-card">
+                    <form id="loginForm" class="login-form" novalidate>
+                        
+                        <!-- Error Alert -->
+                        <div id="loginAlert" class="alert-box alert-danger hidden" role="alert">
+                            <span class="alert-icon">⚠️</span>
+                            <span id="loginAlertMessage" class="alert-text"></span>
+                        </div>
+
+                        <!-- Tenant ID Input -->
+                        <div class="form-group">
+                            <label for="tenantIdInput" class="form-label">
+                                <span>テナント ID (Tenant)</span>
+                                <span class="badge-required">必須</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🏢</span>
+                                <input 
+                                    type="text" 
+                                    id="tenantIdInput" 
+                                    class="form-input" 
+                                    placeholder="例: tenant-alpha" 
+                                    required 
+                                    autocomplete="organization"
+                                >
+                            </div>
+                            <div class="tenant-chips">
+                                <span class="chips-label">クイック選択:</span>
+                                <button type="button" class="tenant-chip" data-tenant="tenant-alpha">tenant-alpha</button>
+                                <button type="button" class="tenant-chip" data-tenant="tenant-beta">tenant-beta</button>
+                                <button type="button" class="tenant-chip" data-tenant="tenant-gamma">tenant-gamma</button>
+                            </div>
+                        </div>
+
+                        <!-- Username Input -->
+                        <div class="form-group">
+                            <label for="usernameInput" class="form-label">
+                                <span>ユーザー名 (Username)</span>
+                                <span class="badge-required">必須</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">👤</span>
+                                <input 
+                                    type="text" 
+                                    id="usernameInput" 
+                                    class="form-input" 
+                                    placeholder="例: admin または user1" 
+                                    required 
+                                    autocomplete="username"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Password Input -->
+                        <div class="form-group">
+                            <label for="passwordInput" class="form-label">
+                                <span>パスワード (Password)</span>
+                                <span class="badge-required">必須</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔑</span>
+                                <input 
+                                    type="password" 
+                                    id="passwordInput" 
+                                    class="form-input" 
+                                    placeholder="••••••••" 
+                                    required 
+                                    autocomplete="current-password"
+                                >
+                                <button type="button" id="togglePasswordBtn" class="input-suffix-btn" title="パスワード表示切替" aria-label="パスワード表示切替">
+                                    👁️
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="loginSubmitBtn" class="btn btn-primary btn-block">
+                            <span class="btn-text">サインイン</span>
+                            <span class="btn-spinner hidden" id="loginSpinner"></span>
+                        </button>
+                    </form>
+
+                    <!-- Fast Demo Login Section -->
+                    <div class="demo-login-section">
+                        <div class="divider">
+                            <span>ワンクリック テストログイン</span>
+                        </div>
+                        <div class="demo-buttons-grid">
+                            <button type="button" class="demo-btn" id="demoAlphaAdminBtn" data-tenant="tenant-alpha" data-user="admin" data-pass="password123">
+                                <span class="demo-tenant-tag alpha">tenant-alpha</span>
+                                <span class="demo-user-name">Alice (Admin)</span>
+                            </button>
+                            <button type="button" class="demo-btn" id="demoAlphaUserBtn" data-tenant="tenant-alpha" data-user="user1" data-pass="password123">
+                                <span class="demo-tenant-tag alpha">tenant-alpha</span>
+                                <span class="demo-user-name">Bob (Staff)</span>
+                            </button>
+                            <button type="button" class="demo-btn" id="demoBetaAdminBtn" data-tenant="tenant-beta" data-user="admin" data-pass="password123">
+                                <span class="demo-tenant-tag beta">tenant-beta</span>
+                                <span class="demo-user-name">Carol (Admin)</span>
+                            </button>
+                            <button type="button" class="demo-btn" id="demoBetaUserBtn" data-tenant="tenant-beta" data-user="user2" data-pass="password123">
+                                <span class="demo-tenant-tag beta">tenant-beta</span>
+                                <span class="demo-user-name">Dave (Staff)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer Info -->
+                <footer class="login-footer">
+                    <p>Hibernate 6 行レベルマルチテナント ＆ Spring Boot 3.2 基盤</p>
+                </footer>
+            </div>
+        </main>
+
+        <!-- ============================================ -->
+        <!-- VIEW 2: ログイン後ダッシュボード (Dashboard View) -->
+        <!-- ============================================ -->
+        <div id="dashboardView" class="view-panel dashboard-view hidden">
+            
+            <!-- Top Navigation Bar -->
+            <header class="top-nav">
+                <div class="nav-left">
+                    <div class="brand-logo">
+                        <svg class="brand-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        <span class="nav-brand-title">Aether Cloud</span>
+                    </div>
+
+                    <!-- Active Tenant Tag -->
+                    <div class="active-tenant-indicator" title="現在のテナント分離コンテキスト">
+                        <span class="tenant-dot"></span>
+                        <span class="tenant-label">テナント:</span>
+                        <span id="activeTenantBadge" class="tenant-name-badge">tenant-alpha</span>
+                        <span class="isolation-status">🔒 行レベル分離中</span>
+                    </div>
+                </div>
+
+                <div class="nav-right">
+                    <!-- User Profile & Logout -->
+                    <div class="user-profile-badge">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <div class="user-details">
+                            <span id="userDisplayName" class="user-name">Alice</span>
+                            <span id="userRoleBadge" class="user-role">ADMIN</span>
+                        </div>
+                    </div>
+
+                    <button type="button" id="logoutBtn" class="btn btn-outline btn-sm">
+                        <span>ログアウト</span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Content -->
+            <main class="dashboard-body">
+                
+                <!-- Tenant Overview Banner -->
+                <section class="overview-banner">
+                    <div class="banner-content">
+                        <div class="banner-text">
+                            <div class="banner-tag">CONNECTED TENANT WORKSPACE</div>
+                            <h2 class="banner-title" id="dashboardWelcomeTitle">ようこそ、テナントワークスペースへ</h2>
+                            <p class="banner-desc">
+                                現在 <strong id="currentTenantNameText" class="text-accent">tenant-alpha</strong> のデータスペースに接続されています。
+                                登録されるすべてのアイテムデータは PostgreSQL の行レベルマルチテナント機構により厳密に保護され、他テナントからのアクセスは完全に遮断されます。
+                            </p>
+                        </div>
+                        <div class="banner-stats">
+                            <div class="stat-card">
+                                <span class="stat-label">管理アイテム数</span>
+                                <span class="stat-value" id="itemsCountBadge">0</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">アクセス権限</span>
+                                <span class="stat-value text-success" id="roleSummaryText">ADMIN</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Dashboard Tab Navigation -->
+                <nav class="dashboard-tabs">
+                    <button type="button" class="tab-btn active" id="tabItemsBtn" data-tab="itemsTab">
+                        <span class="tab-icon">📦</span>
+                        <span>アイテム管理</span>
+                    </button>
+                    <button type="button" class="tab-btn" id="tabGrafanaBtn" data-tab="grafanaTab">
+                        <span class="tab-icon">📊</span>
+                        <span>テナント分析ダッシュボード (Grafana)</span>
+                        <span class="badge-sso">SSO連携</span>
+                    </button>
+                </nav>
+
+                <!-- TAB 1: アイテム管理 -->
+                <div id="itemsTab" class="tab-pane active">
+                    <!-- Action & Filter Bar -->
+                    <section class="action-bar">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="itemSearchInput" class="search-input" placeholder="アイテム名や説明で検索...">
+                        </div>
+                        <div class="action-buttons">
+                            <button type="button" id="refreshItemsBtn" class="btn btn-secondary" title="データを再読み込み">
+                                <span>🔄 最新化</span>
+                            </button>
+                            <button type="button" id="openCreateItemModalBtn" class="btn btn-primary">
+                                <span>➕ 新規アイテム登録</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Items Grid Section -->
+                    <section class="items-section">
+                        <div class="section-header">
+                            <h3 class="section-title">テナント専用アイテム一覧</h3>
+                            <span class="section-note">※ ヘッダー <code>X-Tenant-ID</code> で自動抽出された安全なデータです</span>
+                        </div>
+
+                        <!-- Items Grid Container -->
+                        <div id="itemsGrid" class="items-grid">
+                            <!-- Loaded dynamically via JavaScript -->
+                        </div>
+
+                        <!-- Empty State View -->
+                        <div id="emptyStateView" class="empty-state hidden">
+                            <div class="empty-icon">📦</div>
+                            <h4>アイテムが登録されていません</h4>
+                            <p>このテナントにはまだアイテムが存在しません。右上の「新規アイテム登録」ボタンからアイテムを追加してみましょう。</p>
+                            <button type="button" class="btn btn-primary btn-sm" id="emptyStateAddBtn">最初のアイテムを作成</button>
+                        </div>
+                    </section>
+
+                    <!-- Multi-Tenant Isolation Verification Card -->
+                    <section class="verification-card glass-card">
+                        <div class="verification-header">
+                            <span class="verification-icon">🛡️</span>
+                            <div>
+                                <h4>マルチテナント隔離のリアルタイム検証</h4>
+                                <p>異なるテナントへ瞬時に切り替え、データが完全に独立して分離されていることを確認できます。</p>
+                            </div>
+                        </div>
+                        <div class="verification-actions">
+                            <span class="switch-prompt">別テナントで確認する:</span>
+                            <button type="button" class="btn btn-sm btn-outline test-switch-btn" id="switchBetaBtn" data-switch-tenant="tenant-beta">
+                                tenant-beta へ切り替え
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline test-switch-btn" id="switchAlphaBtn" data-switch-tenant="tenant-alpha">
+                                tenant-alpha へ切り替え
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TAB 2: Grafana テナント分析ダッシュボード -->
+                <div id="grafanaTab" class="tab-pane hidden">
+                    <section class="grafana-container-card glass-card">
+                        <div class="grafana-header">
+                            <div class="grafana-title-group">
+                                <span class="grafana-icon">📈</span>
+                                <div>
+                                    <h3 class="grafana-title">テナント専用 Grafana ダッシュボード</h3>
+                                    <p class="grafana-desc">
+                                        当アプリでログインしたユーザー情報を元に <strong>Auth Proxy (シングルサインオン)</strong> で自動接続しています。<br>
+                                        表示対象テナント: <strong id="grafanaTenantDisplayBadge" class="text-accent">tenant-alpha</strong> （他テナントのダッシュボードへのアクセスはAPIレベルで遮断されます）
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="grafana-actions">
+                                <button type="button" class="btn btn-secondary btn-sm" id="reloadGrafanaBtn" title="ダッシュボードをリロード">
+                                    <span>🔄 再読込</span>
+                                </button>
+                                <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" id="openExternalGrafanaBtn" title="ブラウザの別タブで全画面表示">
+                                    <span>別タブで開く ↗</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="grafana-iframe-wrapper">
+                            <div id="grafanaLoading" class="grafana-loading">
+                                <div class="grafana-spinner"></div>
+                                <span>Grafana ダッシュボードをロードしています...</span>
+                            </div>
+                            <iframe id="grafanaIframe" class="grafana-iframe" title="Grafana Tenant Dashboard" src="about:blank"></iframe>
+                        </div>
+                    </section>
+                </div>
+
+            </main>
+
+            <!-- Create Item Modal Dialog -->
+            <div id="createItemModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+                <div class="modal-card glass-card">
+                    <div class="modal-header">
+                        <h3 id="modalTitle" class="modal-title">新規アイテムの作成</h3>
+                        <button type="button" id="closeModalBtn" class="modal-close-btn" aria-label="閉じる">✕</button>
+                    </div>
+                    <form id="createItemForm" class="modal-form">
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>所属テナント (自動設定)</span>
+                            </label>
+                            <input type="text" id="modalTenantDisplay" class="form-input" readonly disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newItemNameInput" class="form-label">
+                                <span>アイテム名 (Item Name)</span>
+                                <span class="badge-required">必須</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="newItemNameInput" 
+                                class="form-input" 
+                                placeholder="例: 2026年度 Q3 案件ファイル" 
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newItemDescInput" class="form-label">
+                                <span>説明・メモ (Description)</span>
+                            </label>
+                            <textarea 
+                                id="newItemDescInput" 
+                                class="form-input form-textarea" 
+                                rows="3" 
+                                placeholder="アイテムの詳細情報を入力してください"
+                            ></textarea>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="button" id="cancelCreateBtn" class="btn btn-secondary">キャンセル</button>
+                            <button type="submit" id="submitCreateBtn" class="btn btn-primary">
+                                <span class="btn-text">保存する</span>
+                                <span class="btn-spinner hidden" id="saveSpinner"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Application Script -->
+    <script src="/js/app.js"></script>
+</body>
+</html>
